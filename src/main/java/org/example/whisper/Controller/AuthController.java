@@ -39,7 +39,7 @@ public class AuthController {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getName(),
+                            request.getEmail(),
                             request.getPassword()
                     )
             );

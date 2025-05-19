@@ -15,6 +15,10 @@ public class MyUserDetails implements UserDetails {
     public MyUserDetails(User user) {
         this.user = user;
     }
+    public String getEmail() {
+        return user.getEmail();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
         System.out.println("Authorities: " + user.getRole());
@@ -31,7 +35,7 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public String getUsername(){
-        return user.getName();
+        return user.getEmail();
     }
 
     @Override

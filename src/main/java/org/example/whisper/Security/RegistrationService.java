@@ -27,6 +27,7 @@ public class RegistrationService {
         user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
+        user.setEmail(request.getEmail());
 
         System.out.println("Saving user: " + user.getName()); // <-- добавь лог
 

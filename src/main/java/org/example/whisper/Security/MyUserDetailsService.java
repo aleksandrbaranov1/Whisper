@@ -21,16 +21,10 @@ public class MyUserDetailsService implements UserDetailsService {
 //    }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("Attempting to load user: " + username);
-        Optional<User> user = userRepository.findByName(username);
-        if (user.isEmpty()) {
-            System.out.println("User not found: " + username);
-        } else {
-            System.out.println("User found: " + username);
-        }
-        return user.map(MyUserDetails::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found eith this email"));
+        return new MyUserDetails(user);
     }
 
 }

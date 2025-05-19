@@ -1,7 +1,7 @@
 package org.example.whisper.DTO;
 
 public class LoginRequest {
-    private String name;
+    private String email;
     private String password;
 
     public String getPassword() {
@@ -12,11 +12,11 @@ public class LoginRequest {
         this.password = password;
     }
 
-    public String getName() {
-        return name;
+    public String getEmail() {
+        return email;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

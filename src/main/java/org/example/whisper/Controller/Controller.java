@@ -12,8 +12,13 @@ public class Controller {
     }
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String allChats(){
-        return "Page with all chats";
+    public String allChats(org.springframework.security.core.Authentication authentication) {
+        if (authentication == null) {
+            return "No authentication in context";
+        }
+
+        return "User: " + authentication.getName() +
+                ", Authorities: " + authentication.getAuthorities().toString();
     }
 
     @GetMapping("/profile")
