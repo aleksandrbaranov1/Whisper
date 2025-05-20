@@ -1,4 +1,4 @@
-package org.example.whisper.Security;
+package org.example.whisper.Service;
 
 import jakarta.transaction.Transactional;
 import org.example.whisper.DTO.UserRegistrationDTO;

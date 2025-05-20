@@ -4,7 +4,7 @@ import org.example.whisper.DTO.JwtResponse;
 import org.example.whisper.DTO.LoginRequest;
 import org.example.whisper.DTO.UserRegistrationDTO;
 import org.example.whisper.Security.MyUserDetails;
-import org.example.whisper.Security.RegistrationService;
+import org.example.whisper.Service.RegistrationService;
 import org.example.whisper.Service.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://127.0.0.1:8081")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
