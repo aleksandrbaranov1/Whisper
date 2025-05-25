@@ -2,6 +2,8 @@ package org.example.whisper.Entity;
 
 import jakarta.persistence.*;
 
+import java.util.Set;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -14,6 +16,12 @@ public class User {
     private String password;
     private String role;
     private String email;
+
+    @ManyToMany(mappedBy = "participants")
+    private Set<Chat> chats;
+    @OneToMany(mappedBy = "sender")
+    private Set<Message> messages;
+
     public User() {
     }
 
@@ -23,6 +31,14 @@ public class User {
         this.password = password;
         this.role = role;
         this.email = email;
+    }
+
+    public Set<Chat> getChats() {
+        return chats;
+    }
+
+    public void setChats(Set<Chat> chats) {
+        this.chats = chats;
     }
 
     public Long getId() {
