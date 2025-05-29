@@ -7,6 +7,7 @@ import org.example.whisper.Entity.User;
 import org.example.whisper.Repository.ChatRepository;
 import org.example.whisper.Repository.MessageRepository;
 import org.example.whisper.Repository.UserRepository;
+import org.example.whisper.Service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,42 +23,20 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/messages")
 public class MessageController {
+    private final MessageService messageService;
 
-    @Autowired
-    private MessageRepository messageRepository;
+    public MessageController(MessageService messageService, UserRepository userRepository){
+        this.messageService = messageService;
 
-    @Autowired
-    private ChatRepository chatRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
+    }
     @PostMapping
     public ResponseEntity<?> sendMessage(@RequestBody MessageDTO dto,
                                          @AuthenticationPrincipal UserDetails userDetails) {
-        User sender = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        Chat chat = chatRepository.findById(dto.getChatId()).orElseThrow();
-
-        Message message = new Message();
-        message.setContent(dto.getContent());
-        LocalDateTime localDateTime = LocalDateTime.now();
-        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
-        message.setTimestamp(instant);
-
-        message.setChat(chat);
-        message.setSender(sender);
-
-        Message saved = messageRepository.save(message);
-        return ResponseEntity.ok(new MessageDTO(saved));
+        return messageService.sendMessage(dto, userDetails);
     }
 
     @GetMapping("/chat/{chatId}")
     public ResponseEntity<?> getChatMessages(@PathVariable Long chatId) {
-        List<Message> messages = messageRepository.findByChatId(chatId);
-        List<MessageDTO> result = messages.stream()
-                .map(MessageDTO::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(result);
+        return messageService.getChatMessages(chatId);
     }
 }
