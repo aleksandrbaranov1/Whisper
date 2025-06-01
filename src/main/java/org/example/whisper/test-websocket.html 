@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test WebSocket</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+    <h2>WebSocket Test</h2>
+    <button onclick="connect()">Подключиться</button>
+    <button onclick="disconnect()">Отключиться</button>
+    <br><br>
+    <input type="text" id="messageInput" placeholder="Сообщение...">
+    <button onclick="sendMessage()">Отправить</button>
+
+    <ul id="messages"></ul>
+
+    <script>
+        let stompClient = null;
+
+        function connect() {
+            const socket = new SockJS('http://localhost:8080/ws');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+
+                stompClient.subscribe('/topic/1', function (messageOutput) {
+                    const message = JSON.parse(messageOutput.body);
+                    showMessage(message.content);
+                });
+            }, function (error) {
+                console.error('STOMP connection error:', error);
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        function sendMessage() {
+            const content = document.getElementById('messageInput').value;
+            stompClient.send("/app/chat.send", {}, JSON.stringify({
+                chatId: 1,
+                content: content
+            }));
+        }
+
+        function showMessage(message) {
+            const response = document.getElementById('messages');
+            const li = document.createElement('li');
+            li.appendChild(document.createTextNode(message));
+            response.appendChild(li);
+        }
+    </script>
+</body>
+</html>
