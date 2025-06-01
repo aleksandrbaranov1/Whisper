@@ -4,8 +4,13 @@ import org.example.whisper.Entity.User;
 import org.example.whisper.Repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
 
 @Service
 public class UserService {
@@ -31,5 +36,11 @@ public class UserService {
 
     public User save(User user) {
         return userRepository.save(user);
+    }
+    public List<String> searchUsers(@RequestParam String name){
+        return userRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(User::getName)
+                .collect(Collectors.toList());
     }
 }

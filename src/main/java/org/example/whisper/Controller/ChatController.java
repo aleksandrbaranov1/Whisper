@@ -24,9 +24,12 @@ public class ChatController {
     }
 
     @PostMapping("/private")
-    public ResponseEntity<ChatDTO> createPrivateChat(@RequestParam Long user2Id, Authentication authentication) {
+    public ResponseEntity<ChatDTO> createPrivateChat(@RequestParam String user2Name, Authentication authentication) {
         String currentUsername = authentication.getName();
-        User currentUser = userService.findByEmail(currentUsername); // или findByEmail
+        User currentUser = userService.findByEmail(currentUsername); // тот, кто начинает чаь
+
+        User user2 = userService.findByName(user2Name);
+        Long user2Id = user2.getId();
 
         Chat chat = chatService.createPrivateChat(currentUser.getId(), user2Id);
         return ResponseEntity.ok(new ChatDTO(chat));
@@ -42,5 +45,9 @@ public class ChatController {
                 .map(ChatDTO :: new)
                 .toList();
         return ResponseEntity.ok(chatDTOs);
+    }
+    @GetMapping("/searchUsers")
+    public List<String> searchUsers(@RequestParam String name){
+        return userService.searchUsers(name);
     }
 }
