@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/api/chats")
 public class ChatController {
     private final ChatService chatService;
-    private final UserService userService; // нужен для извлечения User по имени (или email)
+    private final UserService userService;
 
     public ChatController(ChatService chatService, UserService userService) {
         this.chatService = chatService;
@@ -38,7 +38,7 @@ public class ChatController {
     @GetMapping("/my")
     public ResponseEntity<List<ChatDTO>> getMyChats(Authentication authentication) {
         String currentUsername = authentication.getName();
-        User currentUser = userService.findByEmail(currentUsername); // или findByEmail
+        User currentUser = userService.findByEmail(currentUsername);
 
         List<Chat> chats = chatService.getChatsForUser(currentUser.getId());
         List<ChatDTO> chatDTOs = chats.stream()
