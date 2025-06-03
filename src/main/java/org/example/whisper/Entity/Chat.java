@@ -21,6 +21,7 @@ public class Chat {
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Message> messages;
 
+
     public Set<Message> getMessages() {
         return messages;
     }

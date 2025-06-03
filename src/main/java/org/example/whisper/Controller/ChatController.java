@@ -1,6 +1,7 @@
 package org.example.whisper.Controller;
 
 import org.example.whisper.DTO.ChatDTO;
+import org.example.whisper.DTO.MarkAsReadRequest;
 import org.example.whisper.Entity.Message;
 import org.example.whisper.Service.MessageService;
 import org.springframework.security.core.Authentication;
@@ -62,4 +63,6 @@ public class ChatController {
     public List<String> searchUsers(@RequestParam String name){
         return userService.searchUsers(name);
     }
+
+
 }

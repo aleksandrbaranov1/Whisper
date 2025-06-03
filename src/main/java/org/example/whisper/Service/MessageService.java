@@ -1,5 +1,6 @@
 package org.example.whisper.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.example.whisper.DTO.MessageDTO;
 import org.example.whisper.Entity.Chat;
 import org.example.whisper.Entity.Message;
@@ -7,6 +8,7 @@ import org.example.whisper.Entity.User;
 import org.example.whisper.Repository.ChatRepository;
 import org.example.whisper.Repository.MessageRepository;
 import org.example.whisper.Repository.UserRepository;
+import org.hibernate.validator.internal.util.logging.Messages;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
@@ -59,4 +62,27 @@ public class MessageService {
         return messageRepository.findTopByChatIdOrderByTimestampDesc(chatId)
                 .orElse(null);
     }
+    @Transactional
+    public void markMessagesAsRead(Long userId, List<Long> messageIds){
+        List<Message> messages = messageRepository.findAllById(messageIds);
+        System.out.println("Messages found: " + messages.size());
+        for (Message msg : messages) {
+            System.out.println("Message ID: " + msg.getId() +
+                    ", Sender ID: " + msg.getSender().getId() +
+                    ", Current User ID: " + userId);
+
+            if (!msg.getSender().getId().equals(userId)) {
+                msg.setRead(true);
+                System.out.println("Marked message as read");
+            } else {
+                System.out.println("Skipped own message");
+            }
+        }
+
+        messageRepository.saveAll(messages);
+        messageRepository.flush();
+
+
+    }
+
 }

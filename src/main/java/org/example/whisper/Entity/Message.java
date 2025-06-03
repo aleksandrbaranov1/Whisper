@@ -24,6 +24,16 @@ public class Message {
     @Column(nullable = false)
     private Instant timestamp;
 
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead;
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
+    }
 
     public Long getId() {
         return id;

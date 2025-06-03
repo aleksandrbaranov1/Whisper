@@ -11,6 +11,7 @@ public class MessageDTO {
     private Instant timestamp;
     private Long senderId;
     private Long chatId;
+    private boolean isRead;
 
     public MessageDTO(Message message) {
         this.id = message.getId();
@@ -18,9 +19,18 @@ public class MessageDTO {
         this.timestamp = message.getTimestamp();
         this.senderId = message.getSender().getId();
         this.chatId = message.getChat().getId();
+        this.isRead = message.isRead();
     }
     public MessageDTO(){
 
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
     }
 
     public Long getId() {

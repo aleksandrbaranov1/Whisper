@@ -16,7 +16,8 @@ public class GlobalCorsConfig {
                 registry.addMapping("/**")
                         .allowedOriginPatterns("http://localhost:5173")
                         .allowCredentials(true)
-                        .allowedMethods("GET", "POST", "PUT", "DELETE");
+                        .allowedHeaders("*") // добавлено!
+                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
             }
         };
     }
