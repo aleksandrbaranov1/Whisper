@@ -26,6 +26,7 @@ public class WebSocketMessageController {
     @MessageMapping("/chat.send")
     @SendTo("/topic/chat")
     public MessageDTO processMessage(@Payload MessageDTO dto) {
+        messagingTemplate.convertAndSend("/topic/chats", "update");
         return webSocketMessageService.handleWebSocketMessage(dto);
     }
 }

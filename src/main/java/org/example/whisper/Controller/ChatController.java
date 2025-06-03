@@ -1,6 +1,8 @@
 package org.example.whisper.Controller;
 
 import org.example.whisper.DTO.ChatDTO;
+import org.example.whisper.Entity.Message;
+import org.example.whisper.Service.MessageService;
 import org.springframework.security.core.Authentication;
 import org.example.whisper.Entity.Chat;
 import org.example.whisper.Entity.User;
@@ -17,10 +19,14 @@ import java.util.List;
 public class ChatController {
     private final ChatService chatService;
     private final UserService userService;
+    private final MessageService messageService;
 
-    public ChatController(ChatService chatService, UserService userService) {
+    public ChatController(ChatService chatService,
+                          UserService userService,
+                          MessageService messageService) {
         this.chatService = chatService;
         this.userService = userService;
+        this.messageService = messageService;
     }
 
     @PostMapping("/private")
@@ -41,11 +47,17 @@ public class ChatController {
         User currentUser = userService.findByEmail(currentUsername);
 
         List<Chat> chats = chatService.getChatsForUser(currentUser.getId());
+
         List<ChatDTO> chatDTOs = chats.stream()
-                .map(ChatDTO :: new)
+                .map(chat -> {
+                    Message lastMessage = messageService.getLastMessageForChat(chat.getId());
+                    return new ChatDTO(chat, lastMessage);
+                })
                 .toList();
+
         return ResponseEntity.ok(chatDTOs);
     }
+
     @GetMapping("/searchUsers")
     public List<String> searchUsers(@RequestParam String name){
         return userService.searchUsers(name);

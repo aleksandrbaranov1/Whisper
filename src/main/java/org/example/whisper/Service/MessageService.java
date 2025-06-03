@@ -55,4 +55,8 @@ public class MessageService {
 
         return ResponseEntity.ok(result);
     }
+    public Message getLastMessageForChat(Long chatId){
+        return messageRepository.findTopByChatIdOrderByTimestampDesc(chatId)
+                .orElse(null);
+    }
 }
