@@ -1,11 +1,15 @@
 package org.example.whisper.Controller;
 import org.example.whisper.DTO.MarkAsReadRequest;
 import org.example.whisper.DTO.MessageDTO;
+import org.example.whisper.DTO.ReadConfirmationResponse;
 import org.example.whisper.Entity.User;
 import org.example.whisper.Repository.UserRepository;
 import org.example.whisper.Service.MessageService;
 import org.example.whisper.Service.UserService;
+import org.springframework.boot.autoconfigure.task.TaskSchedulingProperties;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,12 +20,15 @@ import org.springframework.web.bind.annotation.*;
 public class MessageController {
     private final MessageService messageService;
     private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public MessageController(MessageService messageService,
                              UserRepository userRepository,
-                             UserService userService){
+                             UserService userService,
+                             SimpMessagingTemplate messagingTemplate){
         this.messageService = messageService;
         this.userService = userService;
+        this.messagingTemplate = messagingTemplate;
     }
     @PostMapping
     public ResponseEntity<?> sendMessage(@RequestBody MessageDTO dto,
@@ -34,7 +41,7 @@ public class MessageController {
         return messageService.getChatMessages(chatId);
     }
     @PatchMapping("/mark-read")
-    public ResponseEntity<Void> markMessagesAsRead(
+    public void markMessagesAsRead(
             @RequestBody MarkAsReadRequest request,
             Authentication auth) {
 
@@ -43,6 +50,9 @@ public class MessageController {
 
         messageService.markMessagesAsRead(user.getId(), request.getMessageIds());
 
-        return ResponseEntity.ok().build();
+        messagingTemplate.convertAndSend(
+                "/topic/chat/" + request.getChatId(),
+                new ReadConfirmationResponse(request.getMessageIds())
+        );
     }
 }

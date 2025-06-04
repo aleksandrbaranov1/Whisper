@@ -2,16 +2,14 @@ package org.example.whisper.DTO;
 
 import java.util.List;
 
-public class MarkAsReadRequest {
+public class ReadConfirmationResponse {
     private List<Long> messageIds;
-    private Long chatId;
 
-    public Long getChatId() {
-        return chatId;
+    public ReadConfirmationResponse() {
     }
 
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
+    public ReadConfirmationResponse(List<Long> messageIds) {
+        this.messageIds = messageIds;
     }
 
     public List<Long> getMessageIds() {
