@@ -5,6 +5,7 @@ import org.example.whisper.Entity.User;
 import org.example.whisper.Repository.ChatRepository;
 import org.example.whisper.Repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -53,5 +54,16 @@ public class ChatService {
         return chatRepository.findAll().stream()
                 .filter(chat -> chat.getParticipants().stream()
                         .anyMatch(user ->user.getId().equals(userId))).toList();
+    }
+    @Transactional
+    public void deleteChat(Long chatId, Long userId){
+        Chat chat = chatRepository.findById(chatId).
+                orElseThrow(()->new RuntimeException("Чат" + chatId + "не найден"));
+        boolean isParticipant = chat.getParticipants().stream()
+                .anyMatch(user -> userId.equals(user.getId()));
+        if(!isParticipant){
+            throw new RuntimeException("Пользователь не имеет доступ к чату");
+        }
+        chatRepository.delete(chat);
     }
 }

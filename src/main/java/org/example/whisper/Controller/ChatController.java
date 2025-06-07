@@ -64,5 +64,11 @@ public class ChatController {
         return userService.searchUsers(name);
     }
 
+    @DeleteMapping("/deleteChat/{chatId}")
+    private ResponseEntity<Void> deleteChat(@PathVariable Long chatId, Authentication auth){
+        User user = userService.findByEmail(auth.getName());
+        chatService.deleteChat(chatId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
 
 }
