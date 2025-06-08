@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByChatId(Long chatId);
     Optional<Message> findTopByChatIdOrderByTimestampDesc(Long chatId);
+    Void deleteMessageById(Long messageId);
 
 }

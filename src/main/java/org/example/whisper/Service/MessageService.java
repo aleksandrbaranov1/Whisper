@@ -1,5 +1,6 @@
 package org.example.whisper.Service;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.example.whisper.DTO.MessageDTO;
 import org.example.whisper.Entity.Chat;
@@ -84,5 +85,17 @@ public class MessageService {
 
 
     }
-
+    @Transactional
+    public void deleteMessage(Long chatId, Long messageId, Authentication auth){
+        Chat chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new RuntimeException("Чат " + chatId +"не найден"));
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        boolean isParticipant = chat.getParticipants().stream()
+                .anyMatch(currentUser -> user.getId().equals(currentUser.getId()));
+        if(!isParticipant){
+            throw new RuntimeException("Пользователь не имеет доступ к чату");
+        }
+        messageRepository.deleteById(messageId);
+    }
 }

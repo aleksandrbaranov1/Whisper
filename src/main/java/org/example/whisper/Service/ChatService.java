@@ -3,7 +3,9 @@ package org.example.whisper.Service;
 import org.example.whisper.Entity.Chat;
 import org.example.whisper.Entity.User;
 import org.example.whisper.Repository.ChatRepository;
+import org.example.whisper.Repository.MessageRepository;
 import org.example.whisper.Repository.UserRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,10 +15,14 @@ import java.util.*;
 public class ChatService {
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
+    private final MessageRepository messageRepository;
 
-    public ChatService(UserRepository userRepository, ChatRepository chatRepository){
+    public ChatService(UserRepository userRepository,
+                       ChatRepository chatRepository,
+                       MessageRepository messageRepository){
         this.userRepository = userRepository;
         this.chatRepository = chatRepository;
+        this.messageRepository = messageRepository;
     }
 
     public Chat createPrivateChat(Long user1Id, Long user2Id){
@@ -58,7 +64,7 @@ public class ChatService {
     @Transactional
     public void deleteChat(Long chatId, Long userId){
         Chat chat = chatRepository.findById(chatId).
-                orElseThrow(()->new RuntimeException("Чат" + chatId + "не найден"));
+                orElseThrow(()->new RuntimeException("Чат " + chatId + "не найден"));
         boolean isParticipant = chat.getParticipants().stream()
                 .anyMatch(user -> userId.equals(user.getId()));
         if(!isParticipant){

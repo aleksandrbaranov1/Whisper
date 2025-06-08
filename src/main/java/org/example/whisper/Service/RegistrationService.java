@@ -29,7 +29,7 @@ public class RegistrationService {
         user.setRole(request.getRole());
         user.setEmail(request.getEmail());
 
-        System.out.println("Saving user: " + user.getName()); // <-- добавь лог
+        System.out.println("Saving user: " + user.getName());
 
         userRepository.save(user);
     }

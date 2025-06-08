@@ -70,5 +70,4 @@ public class ChatController {
         chatService.deleteChat(chatId, user.getId());
         return ResponseEntity.noContent().build();
     }
-
 }

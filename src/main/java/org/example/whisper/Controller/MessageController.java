@@ -1,4 +1,5 @@
 package org.example.whisper.Controller;
+import org.example.whisper.DTO.DeleteMessageDTO;
 import org.example.whisper.DTO.MarkAsReadRequest;
 import org.example.whisper.DTO.MessageDTO;
 import org.example.whisper.DTO.ReadConfirmationResponse;
@@ -54,5 +55,20 @@ public class MessageController {
                 "/topic/chat/" + request.getChatId(),
                 new ReadConfirmationResponse(request.getMessageIds())
         );
+    }
+
+    @DeleteMapping("/delete/{chatId}/{messageId}")
+    private ResponseEntity<Void> deleteMessage(@PathVariable Long chatId,
+                                               @PathVariable Long messageId,
+                                               Authentication auth){
+        messageService.deleteMessage(chatId, messageId, auth);
+
+        DeleteMessageDTO deleteMessageDTO = new DeleteMessageDTO(messageId, chatId);
+
+        messagingTemplate.convertAndSend(
+                "/topic/chats/" + chatId + "/deleted",
+                deleteMessageDTO);
+//        messagingTemplate.convertAndSend("/topic/chats/" + chatId + "/deleted", deleteMessageDTO);
+        return ResponseEntity.noContent().build();
     }
 }
