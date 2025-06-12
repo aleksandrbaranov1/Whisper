@@ -3,6 +3,7 @@ import org.example.whisper.DTO.DeleteMessageDTO;
 import org.example.whisper.DTO.MarkAsReadRequest;
 import org.example.whisper.DTO.MessageDTO;
 import org.example.whisper.DTO.ReadConfirmationResponse;
+import org.example.whisper.Entity.Message;
 import org.example.whisper.Entity.User;
 import org.example.whisper.Repository.UserRepository;
 import org.example.whisper.Service.MessageService;
@@ -70,5 +71,11 @@ public class MessageController {
                 deleteMessageDTO);
 //        messagingTemplate.convertAndSend("/topic/chats/" + chatId + "/deleted", deleteMessageDTO);
         return ResponseEntity.noContent().build();
+    }
+    @PatchMapping("/edit/{messageId}/{newContent}")
+    private ResponseEntity<?> editMessage(@PathVariable Long messageId,
+                                @PathVariable String newContent,
+                                Authentication authentication){
+        return messageService.editMessage(messageId, newContent, authentication);
     }
 }

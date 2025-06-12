@@ -98,4 +98,20 @@ public class MessageService {
         }
         messageRepository.deleteById(messageId);
     }
+    public ResponseEntity<?> editMessage(Long messageId, String newContent, Authentication authentication){
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        Message message = messageRepository.findMessageById(messageId).orElseThrow(
+                () -> new RuntimeException("Сообщение не найдено"));
+        Chat chat = chatRepository.findById(message.getChat().getId())
+                .orElseThrow(() ->new RuntimeException("Чат" + message.getChat().getId() + "не найден"));
+        boolean isParticipant = chat.getParticipants().stream()
+                        .anyMatch(currentUser -> user.getId().equals(currentUser.getId()));
+        if(!isParticipant){
+            throw new RuntimeException("Пользователь не имеет доступ к чату");
+        }
+        message.setContent(newContent);
+        messageRepository.save(message);
+        return ResponseEntity.ok(new MessageDTO(message));
+    }
 }
