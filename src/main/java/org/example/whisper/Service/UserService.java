@@ -1,9 +1,14 @@
 package org.example.whisper.Service;
 
+import org.example.whisper.DTO.UpdateBIODTO;
+import org.example.whisper.DTO.UserDTO;
 import org.example.whisper.Entity.User;
 import org.example.whisper.Repository.UserRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -43,4 +48,18 @@ public class UserService {
                 .map(User::getName)
                 .collect(Collectors.toList());
     }
+
+//    public ResponseEntity<?> updateBio(@RequestBody UpdateBIODTO bioDTO,
+//                                       Authentication authentication){
+//        User user = userRepository.findByEmail(authentication.getName())
+//                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+//
+//        if(!user.getId().equals(bioDTO.getUserId())){
+//            throw new RuntimeException("Пользователь не имеет доступ к редактированию информации");
+//        }
+//
+//        user.setBio(bioDTO.getBio());
+//        userRepository.save(user);
+//        return ResponseEntity.ok(new UserDTO(user));
+//    }
 }

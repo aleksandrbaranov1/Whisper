@@ -7,12 +7,14 @@ public class UserDTO {
     private String email;
     private Long id;
     private String role;
+    private String bio;
 
     public UserDTO(User user){
         this.name = user.getName();
         this.email = user.getEmail();
         this.id = user.getId();
         this.role = user.getRole();
+        this.bio = user.getBio();
     }
 
     public String getName() {
@@ -45,5 +47,13 @@ public class UserDTO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }

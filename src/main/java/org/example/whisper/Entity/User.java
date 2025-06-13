@@ -22,6 +22,9 @@ public class User {
     @OneToMany(mappedBy = "sender")
     private Set<Message> messages;
 
+    @Column(name = "bio")
+    private String bio = null;
+
     public User() {
     }
 
@@ -31,6 +34,22 @@ public class User {
         this.password = password;
         this.role = role;
         this.email = email;
+    }
+
+    public Set<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(Set<Message> messages) {
+        this.messages = messages;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 
     public Set<Chat> getChats() {
