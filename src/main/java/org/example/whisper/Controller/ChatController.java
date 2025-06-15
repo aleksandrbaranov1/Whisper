@@ -13,7 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chats")
@@ -52,12 +53,24 @@ public class ChatController {
         List<ChatDTO> chatDTOs = chats.stream()
                 .map(chat -> {
                     Message lastMessage = messageService.getLastMessageForChat(chat.getId());
-                    return new ChatDTO(chat, lastMessage);
+                    return new AbstractMap.SimpleEntry<>(chat, lastMessage);
                 })
+                .sorted((e1, e2) -> {
+                    Message m1 = e1.getValue();
+                    Message m2 = e2.getValue();
+
+                    if (m1 == null && m2 == null) return 0;
+                    if (m1 == null) return 1;
+                    if (m2 == null) return -1;
+
+                    return m2.getTimestamp().compareTo(m1.getTimestamp());
+                })
+                .map(entry -> new ChatDTO(entry.getKey(), entry.getValue()))
                 .toList();
 
         return ResponseEntity.ok(chatDTOs);
     }
+
 
     @GetMapping("/searchUsers")
     public List<String> searchUsers(@RequestParam String name){
