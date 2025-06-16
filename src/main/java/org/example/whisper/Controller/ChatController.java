@@ -2,7 +2,10 @@ package org.example.whisper.Controller;
 
 import org.example.whisper.DTO.ChatDTO;
 import org.example.whisper.DTO.MarkAsReadRequest;
+import org.example.whisper.DTO.UserDTO;
 import org.example.whisper.Entity.Message;
+import org.example.whisper.Repository.ChatRepository;
+import org.example.whisper.Repository.UserRepository;
 import org.example.whisper.Service.MessageService;
 import org.springframework.security.core.Authentication;
 import org.example.whisper.Entity.Chat;
@@ -22,13 +25,17 @@ public class ChatController {
     private final ChatService chatService;
     private final UserService userService;
     private final MessageService messageService;
+    private final ChatRepository chatRepository;
+    private final UserRepository userRepository;
 
     public ChatController(ChatService chatService,
                           UserService userService,
-                          MessageService messageService) {
+                          MessageService messageService, ChatRepository chatRepository, UserRepository userRepository) {
         this.chatService = chatService;
         this.userService = userService;
         this.messageService = messageService;
+        this.chatRepository = chatRepository;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/private")
@@ -82,5 +89,20 @@ public class ChatController {
         User user = userService.findByEmail(auth.getName());
         chatService.deleteChat(chatId, user.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/getCompanion/{chatId}")
+    private ResponseEntity<UserDTO> getCompanionByChatId(@PathVariable Long chatId,
+                                                         Authentication authentication){
+        Chat chat = chatRepository.findById(chatId)
+                .orElseThrow(()-> new RuntimeException("Чат не найден"));
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        Long userId = user.getId();
+        User companion = chat.getParticipants().stream()
+                .filter(u -> !u.getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Собеседник не найден"));
+       return ResponseEntity.ok(new UserDTO(companion));
     }
 }
