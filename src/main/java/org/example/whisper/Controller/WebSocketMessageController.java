@@ -24,9 +24,14 @@ public class WebSocketMessageController {
         this.webSocketMessageService = webSocketMessageService;
     }
     @MessageMapping("/chat.send")
-    @SendTo("/topic/chat")
-    public MessageDTO processMessage(@Payload MessageDTO dto) {
+    public void processMessage(@Payload MessageDTO dto) {
+        MessageDTO savedMessage = webSocketMessageService.handleWebSocketMessage(dto);
+
+        // Отправляем обновлённое сообщение только в нужный чат
+        messagingTemplate.convertAndSend("/topic/chat." + dto.getChatId(), savedMessage);
+
+        // Отдельно отправляем событие обновления для сайдбара (списка чатов)
         messagingTemplate.convertAndSend("/topic/chats", "update");
-        return webSocketMessageService.handleWebSocketMessage(dto);
     }
+
 }

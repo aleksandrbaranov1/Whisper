@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class ChatDTO {
     private Long id;
     private Set<UserDTO> participants;
-    private MessageDTO lastMessage; // 🆕
+    private MessageDTO lastMessage;
 
     public ChatDTO(Chat chat, Message lastMessage){
         this.id = chat.getId();

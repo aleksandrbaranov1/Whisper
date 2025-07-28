@@ -1,5 +1,7 @@
 package org.example.whisper.Service;
 
+import org.springframework.boot.autoconfigure.task.TaskSchedulingProperties;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.example.whisper.DTO.MessageDTO;
@@ -26,13 +28,16 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public MessageService(MessageRepository messageRepository,
                           ChatRepository chatRepository,
-                          UserRepository userRepository){
+                          UserRepository userRepository,
+                          SimpMessagingTemplate messagingTemplate){
         this.messageRepository = messageRepository;
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public ResponseEntity<?> sendMessage(MessageDTO dto, UserDetails userDetails){
@@ -49,6 +54,8 @@ public class MessageService {
         message.setSender(sender);
 
         Message saved = messageRepository.save(message);
+        messagingTemplate.convertAndSend("/topic/chat." + chat.getId(), new MessageDTO(saved));
+
         return ResponseEntity.ok(new MessageDTO(saved));
     }
     public ResponseEntity<?> getChatMessages( Long chatId) {

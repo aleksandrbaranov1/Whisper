@@ -4,6 +4,7 @@ import org.example.whisper.Entity.Message;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class MessageDTO {
     private Long id;
@@ -25,6 +26,7 @@ public class MessageDTO {
 
     }
 
+    @JsonProperty("isRead")
     public boolean isRead() {
         return isRead;
     }

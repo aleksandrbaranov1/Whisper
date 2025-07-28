@@ -53,7 +53,7 @@ public class MessageController {
         messageService.markMessagesAsRead(user.getId(), request.getMessageIds());
 
         messagingTemplate.convertAndSend(
-                "/topic/chat/" + request.getChatId(),
+                "/topic/chats/" + request.getChatId() + "/read",
                 new ReadConfirmationResponse(request.getMessageIds())
         );
     }
