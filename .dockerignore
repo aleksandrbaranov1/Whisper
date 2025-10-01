@@ -1,0 +1,26 @@
+# Maven target outputs
+/target
+
+# VCS
+.git
+.gitignore
+
+# IDE files
+.idea
+*.iml
+.vscode
+
+# Local env files
+*.env
+.env*
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Node leftovers (if any front assets appear later)
+node_modules/
+
