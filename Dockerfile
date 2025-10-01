@@ -1,24 +1,25 @@
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Кэшируем зависимости: сначала только pom.xml
+# Копируем pom.xml и исходники
 COPY pom.xml .
-RUN mvn -B -q -e -DskipTests -Dstyle.color=never --no-transfer-progress dependency:go-offline
-
-# Затем копируем исходники и собираем
 COPY src ./src
-RUN mvn -B -q -DskipTests clean package && \
-    cp target/*-SNAPSHOT.jar app.jar
+
+# Скачиваем зависимости
+RUN mvn -B -q -DskipTests -Dstyle.color=never --no-transfer-progress dependency:go-offline
+
+# Сборка
+RUN mvn -B -q -DskipTests clean package
+
+# -------------------------
 FROM gcr.io/distroless/java17-debian12:nonroot
 WORKDIR /app
 
-# Безопасные и разумные JVM дефолты
-ENV JAVA_TOOL_OPTIONS "-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=50 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -Duser.timezone=UTC"
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=50 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -Duser.timezone=UTC"
 
-# Копируем билд-артефакт
-COPY --from=build /app/app.jar /app/app.jar
+# Копируем jar
+COPY --from=build /app/target/*.jar /app/app.jar
 
-# Порт Spring Boot по умолчанию
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java","-jar","/app/app.jar"]
