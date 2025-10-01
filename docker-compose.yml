@@ -27,8 +27,8 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 0000
     restart: always
-    user: "65532:65532"
-    read_only: true
+    #user: "65532:65532"
+    #read_only: true
     tmpfs:
       - /tmp
     security_opt:
