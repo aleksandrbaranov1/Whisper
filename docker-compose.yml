@@ -6,22 +6,59 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 0000
       POSTGRES_DB: whisperdb
-    ports:
-      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d whisperdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+
   backend:
     build: .
     depends_on:
-      - db
-    ports:
-      - "8080:8080"
+      db:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/whisperdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 0000
     restart: always
+    user: "65532:65532"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - internal
+
+  nginx:
+    build: ./NGINX
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - internal
+      - public
 
 volumes:
   pgdata:
 
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+    name: whisper_internal
+  public:
+    driver: bridge
+    name: whisper_public

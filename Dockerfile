@@ -1,18 +1,24 @@
-FROM maven:3.9.4-eclipse-temurin-17 AS build
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
+# Кэшируем зависимости: сначала только pom.xml
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN mvn -B -q -e -DskipTests -Dstyle.color=never --no-transfer-progress dependency:go-offline
 
+# Затем копируем исходники и собираем
 COPY src ./src
-RUN mvn clean package -DskipTests
-
-FROM eclipse-temurin:17-jre-jammy
+RUN mvn -B -q -DskipTests clean package && \
+    cp target/*-SNAPSHOT.jar app.jar
+FROM gcr.io/distroless/java17-debian12:nonroot
 WORKDIR /app
 
+# Безопасные и разумные JVM дефолты
+ENV JAVA_TOOL_OPTIONS "-XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=50 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -Duser.timezone=UTC"
 
-COPY --from=build /app/target/Whisper-0.0.1-SNAPSHOT.jar app.jar
+# Копируем билд-артефакт
+COPY --from=build /app/app.jar /app/app.jar
 
-EXPOSE ${AUTH_SERVICE_PORT}
+# Порт Spring Boot по умолчанию
+EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
