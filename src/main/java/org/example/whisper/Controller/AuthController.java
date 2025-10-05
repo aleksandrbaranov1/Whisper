@@ -4,6 +4,7 @@ import org.example.whisper.DTO.JwtResponse;
 import org.example.whisper.DTO.LoginRequest;
 import org.example.whisper.DTO.UserRegistrationDTO;
 import org.example.whisper.Security.MyUserDetails;
+import org.example.whisper.Service.EmailVerificationService;
 import org.example.whisper.Service.RegistrationService;
 import org.example.whisper.Service.JwtService;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +19,16 @@ public class AuthController {
     private final RegistrationService registrationService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final EmailVerificationService emailVerificationService;
 
     public AuthController(RegistrationService registrationService,
                           AuthenticationManager authenticationManager,
-                          JwtService jwtService){
+                          JwtService jwtService,
+                          EmailVerificationService emailVerificationService){
         this.registrationService = registrationService;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @PostMapping("/register")
@@ -51,5 +55,20 @@ public class AuthController {
             return ResponseEntity.status(403).body("Authentication failed: " + e.getMessage());
         }
     }
+    @PostMapping("/register/request")
+    public ResponseEntity<?> requestRegistration(@RequestBody UserRegistrationDTO request) {
+        emailVerificationService.sendVerificationCode(request.getEmail());
+        return ResponseEntity.ok("Код отправлен на почту");
+    }
+
+    @PostMapping("/register/confirm")
+    public ResponseEntity<?> confirmRegistration(@RequestBody UserRegistrationDTO request) {
+        if (emailVerificationService.verifyCode(request.getEmail(), request.getCode())) {
+            registrationService.register(request);
+            return ResponseEntity.ok("Регистрация успешно завершена");
+        }
+        return ResponseEntity.status(400).body("Неверный код подтверждения");
+    }
+
 
 }

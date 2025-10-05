@@ -6,6 +6,16 @@ public class UserRegistrationDTO {
     private String password;
     private String role;
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    private String code;
+
     public UserRegistrationDTO(){
 
     }
