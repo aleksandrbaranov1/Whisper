@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,15 +30,18 @@ public class MessageService {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatCacheService chatCacheService;
 
     public MessageService(MessageRepository messageRepository,
                           ChatRepository chatRepository,
                           UserRepository userRepository,
-                          SimpMessagingTemplate messagingTemplate){
+                          SimpMessagingTemplate messagingTemplate,
+                          ChatCacheService chatCacheService) {
         this.messageRepository = messageRepository;
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
         this.messagingTemplate = messagingTemplate;
+        this.chatCacheService = chatCacheService;
     }
 
     public ResponseEntity<?> sendMessage(MessageDTO dto, UserDetails userDetails){
@@ -67,9 +71,17 @@ public class MessageService {
         return ResponseEntity.ok(result);
     }
     public Message getLastMessageForChat(Long chatId){
-        return messageRepository.findTopByChatIdOrderByTimestampDesc(chatId)
-                .orElse(null);
+        Chat chat = chatCacheService.getChatFromCache(chatId); // получение чата из кэша
+        if (chat != null && chat.getMessages() != null && !chat.getMessages().isEmpty()) {
+            return chat.getMessages().stream()
+                    .max(Comparator.comparing(Message::getTimestamp))
+                    .orElse(null);
+        }
+
+        // Если в кэше нет — грузим из базы
+        return messageRepository.findTopByChatIdOrderByTimestampDesc(chatId).orElse(null);
     }
+
     @Transactional
     public void markMessagesAsRead(Long userId, List<Long> messageIds){
         List<Message> messages = messageRepository.findAllById(messageIds);
@@ -113,7 +125,7 @@ public class MessageService {
         Chat chat = chatRepository.findById(message.getChat().getId())
                 .orElseThrow(() ->new RuntimeException("Чат" + message.getChat().getId() + "не найден"));
         boolean isParticipant = chat.getParticipants().stream()
-                        .anyMatch(currentUser -> user.getId().equals(currentUser.getId()));
+                .anyMatch(currentUser -> user.getId().equals(currentUser.getId()));
         if(!isParticipant){
             throw new RuntimeException("Пользователь не имеет доступ к чату");
         }
