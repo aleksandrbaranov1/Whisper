@@ -29,6 +29,9 @@ public class ChatServiceTest {
     @Mock
     private MessageRepository messageRepository;
 
+    @Mock
+    private ChatCacheService chatCacheService;
+
     @InjectMocks
     private ChatService chatService;
 
