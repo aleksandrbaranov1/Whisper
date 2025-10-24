@@ -5,6 +5,7 @@ import org.example.whisper.Entity.Message;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.web.multipart.MultipartFile;
 
 public class MessageDTO {
     private Long id;
@@ -13,6 +14,25 @@ public class MessageDTO {
     private Long senderId;
     private Long chatId;
     private boolean isRead;
+    private String imageUrl;
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public MultipartFile getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(MultipartFile photo) {
+        this.photo = photo;
+    }
+
+    private MultipartFile photo;
 
     public MessageDTO(Message message) {
         this.id = message.getId();
@@ -21,6 +41,7 @@ public class MessageDTO {
         this.senderId = message.getSender().getId();
         this.chatId = message.getChat().getId();
         this.isRead = message.isRead();
+        this.imageUrl = message.getImageUrl();
     }
     public MessageDTO(){
 

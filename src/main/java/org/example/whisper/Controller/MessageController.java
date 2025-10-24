@@ -16,36 +16,48 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/messages")
 public class MessageController {
+
     private final MessageService messageService;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
 
     public MessageController(MessageService messageService,
-                             UserRepository userRepository,
                              UserService userService,
                              SimpMessagingTemplate messagingTemplate){
         this.messageService = messageService;
         this.userService = userService;
         this.messagingTemplate = messagingTemplate;
     }
-    @PostMapping
-    public ResponseEntity<?> sendMessage(@RequestBody MessageDTO dto,
-                                         @AuthenticationPrincipal UserDetails userDetails) {
-        return messageService.sendMessage(dto, userDetails);
+
+    @PostMapping(consumes = { "multipart/form-data", "application/json" })
+    public ResponseEntity<?> sendMessage(
+            @RequestPart(value = "message", required = false) MessageDTO messageDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        if (messageDTO != null && image != null) {
+            messageDTO.setPhoto(image);  // <-- исправлено
+        }
+        if (messageDTO != null) {
+            return messageService.sendMessage(messageDTO, userDetails);
+        }
+
+        return ResponseEntity.badRequest().body("Нет данных для отправки сообщения");
     }
 
     @GetMapping("/chat/{chatId}")
     public ResponseEntity<?> getChatMessages(@PathVariable Long chatId) {
         return messageService.getChatMessages(chatId);
     }
+
     @PatchMapping("/mark-read")
-    public void markMessagesAsRead(
-            @RequestBody MarkAsReadRequest request,
-            Authentication auth) {
+    public void markMessagesAsRead(@RequestBody MarkAsReadRequest request,
+                                   Authentication auth) {
 
         String email = auth.getName();
         User user = userService.findByEmail(email);
@@ -61,21 +73,22 @@ public class MessageController {
     @DeleteMapping("/delete/{chatId}/{messageId}")
     private ResponseEntity<Void> deleteMessage(@PathVariable Long chatId,
                                                @PathVariable Long messageId,
-                                               Authentication auth){
+                                               Authentication auth) {
         messageService.deleteMessage(chatId, messageId, auth);
 
         DeleteMessageDTO deleteMessageDTO = new DeleteMessageDTO(messageId, chatId);
 
         messagingTemplate.convertAndSend(
                 "/topic/chats/" + chatId + "/deleted",
-                deleteMessageDTO);
-//        messagingTemplate.convertAndSend("/topic/chats/" + chatId + "/deleted", deleteMessageDTO);
+                deleteMessageDTO
+        );
         return ResponseEntity.noContent().build();
     }
+
     @PatchMapping("/edit/{messageId}/{newContent}")
     private ResponseEntity<?> editMessage(@PathVariable Long messageId,
-                                @PathVariable String newContent,
-                                Authentication authentication){
+                                          @PathVariable String newContent,
+                                          Authentication authentication){
         return messageService.editMessage(messageId, newContent, authentication);
     }
 }
