@@ -15,6 +15,10 @@ import org.hibernate.validator.internal.util.logging.Messages;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,17 +35,21 @@ public class MessageService {
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatCacheService chatCacheService;
+    private final S3Client s3Client;
+    private String bucket = "whisperbucket";
 
     public MessageService(MessageRepository messageRepository,
                           ChatRepository chatRepository,
                           UserRepository userRepository,
                           SimpMessagingTemplate messagingTemplate,
-                          ChatCacheService chatCacheService) {
+                          ChatCacheService chatCacheService,
+                          S3Client s3Client) {
         this.messageRepository = messageRepository;
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
         this.messagingTemplate = messagingTemplate;
         this.chatCacheService = chatCacheService;
+        this.s3Client = s3Client;
     }
 
     public ResponseEntity<?> sendMessage(MessageDTO dto, UserDetails userDetails){
@@ -50,18 +58,36 @@ public class MessageService {
 
         Message message = new Message();
         message.setContent(dto.getContent());
-        LocalDateTime localDateTime = LocalDateTime.now();
-        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
-        message.setTimestamp(instant);
-
+        message.setTimestamp(Instant.now());
         message.setChat(chat);
         message.setSender(sender);
+
+        // --- Новое: обработка фото ---
+        MultipartFile photo = dto.getPhoto();
+        if(photo != null && !photo.isEmpty()){
+            try{
+                String key = "photos/" + java.util.UUID.randomUUID() + "-" + photo.getOriginalFilename();
+                s3Client.putObject(
+                        PutObjectRequest.builder()
+                                .bucket(bucket)
+                                .key(key)
+                                .contentType(photo.getContentType())
+                                .build(),
+                        RequestBody.fromBytes(photo.getBytes())
+                );
+                String photoUrl = "https://storage.yandexcloud.net/" + bucket + "/" + key;
+                message.setImageUrl(photoUrl);
+            } catch(Exception e){
+                return ResponseEntity.internalServerError().body("Ошибка загрузки фото: " + e.getMessage());
+            }
+        }
 
         Message saved = messageRepository.save(message);
         messagingTemplate.convertAndSend("/topic/chat." + chat.getId(), new MessageDTO(saved));
 
         return ResponseEntity.ok(new MessageDTO(saved));
     }
+
     public ResponseEntity<?> getChatMessages( Long chatId) {
         List<Message> messages = messageRepository.findByChatId(chatId);
         List<MessageDTO> result = messages.stream()

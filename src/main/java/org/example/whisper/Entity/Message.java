@@ -27,6 +27,9 @@ public class Message {
     @Column(name = "is_read", nullable = false)
     private boolean isRead;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     public boolean isRead() {
         return isRead;
     }
@@ -73,5 +76,13 @@ public class Message {
 
     public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
