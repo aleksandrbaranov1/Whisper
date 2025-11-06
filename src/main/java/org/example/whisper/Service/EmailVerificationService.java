@@ -1,5 +1,6 @@
 package org.example.whisper.Service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,6 +14,8 @@ public class EmailVerificationService {
 
     private final JavaMailSender mailSender;
     private final RedisTemplate<String, String> redisTemplate;
+    @Value("${MAIL_USERNAME}")
+    private String fromMail;
 
     public EmailVerificationService(JavaMailSender mailSender, RedisTemplate<String, String> redisTemplate) {
         this.mailSender = mailSender;
@@ -24,6 +27,7 @@ public class EmailVerificationService {
         redisTemplate.opsForValue().set(email, code, 5, TimeUnit.MINUTES);
 
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromMail);
         message.setTo(email);
         message.setSubject("Код подтверждения регистрации");
         message.setText("Ваш код: " + code + "\nОн действителен 5 минут.");
